@@ -1,0 +1,30 @@
+* {
+  margin: 0px;
+  padding: 0px;
+  background-color: #000;
+  color: #eee;
+}
+
+.cell {
+  background-color: #222;
+  width:  55px;
+  height: 55px;
+  margin: 6px;
+  font-size: 25px;
+  position: absolute;
+  text-align: center;
+}
+
+.cell.highlighted {
+  background-color: #666;
+}
+
+.cell:hover {
+  cursor: pointer;
+}
+
+#start-playback {
+  margin: 6px;
+  position: absolute;
+  padding: 10px;
+}
