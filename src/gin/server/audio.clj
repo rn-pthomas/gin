@@ -11,7 +11,7 @@
        :or {format          AudioFormat$Encoding/PCM_SIGNED
             sample-rate     48000
             bits-per-sample 16
-            channels        2
+            channels        1
             frame-size      4
             frame-rate      sample-rate
             little-endian   false}}]]
@@ -172,39 +172,47 @@
   [seconds]
   (* 1000 seconds))
 
+(defn mk-lines
+  [input-type]
+  (let [audio-format (create-audio-format {:sample-rate 44100 :channels 2})
+        target-line  (input-type->target-line input-type audio-format)
+        source-line  (input-type->source-line input-type audio-format)]
+    {:audio-format audio-format
+     :target-line  target-line
+     :source-line  source-line}))
+
 (defn stream!
-  [{:keys [ms init-ms input-type buffer-size composition] :as params
+  [{:keys [ms init-ms input-type buffer-size composition]
+    :as   params
     :or   {init-ms 0}}]
-  (let [audio-format        (create-audio-format {:sample-rate 44100 :channels 2})
-        target-line         (input-type->target-line input-type audio-format)
-        source-line         (input-type->source-line input-type audio-format)
-        _                   (open-and-start target-line)
-        _                   (open-and-start source-line)
-        byte-array-size     (/ (.getBufferSize target-line) 5)
-        data-bytes          (byte-array byte-array-size)
-        audio-chan          (a/chan 2000)
-        sample-chan         (a/chan 2000)
-        clip-chan           (a/chan 2000)
-        playback-chan       (a/chan 2000)
-        done-chan           (a/chan 1)
-        sample-store        (atom [])
-        clip-store          (atom [])
-        thread-params       {:target-line     target-line
-                             :source-line     source-line
-                             :data-bytes      data-bytes
-                             :byte-array-size byte-array-size
-                             :clip-chan       clip-chan
-                             :sample-chan     sample-chan
-                             :playback-chan   playback-chan
-                             :done-chan       done-chan
-                             :clip-store      clip-store
-                             :sample-store    sample-store
-                             :buffer-size     buffer-size
-                             :composition     composition}
-        recording-thread    (Thread. #(recording-thread-handler thread-params))
-        sample->clip-thread (Thread. #(sample-thread-handler    thread-params))
-        clip-thread         (Thread. #(clip-thread-handler      thread-params))
-        playback-thread     (Thread. #(playback-thread-handler  thread-params))]
+  (let [{:keys [target-line source-line]} (mk-lines input-type)
+        _                                 (open-and-start target-line)
+        _                                 (open-and-start source-line)
+        byte-array-size                   (/ (.getBufferSize target-line) 5)
+        data-bytes                        (byte-array byte-array-size)
+        audio-chan                        (a/chan 2000)
+        sample-chan                       (a/chan 2000)
+        clip-chan                         (a/chan 2000)
+        playback-chan                     (a/chan 2000)
+        done-chan                         (a/chan 1)
+        sample-store                      (atom [])
+        clip-store                        (atom [])
+        thread-params                     {:target-line     target-line
+                                           :source-line     source-line
+                                           :data-bytes      data-bytes
+                                           :byte-array-size byte-array-size
+                                           :clip-chan       clip-chan
+                                           :sample-chan     sample-chan
+                                           :playback-chan   playback-chan
+                                           :done-chan       done-chan
+                                           :clip-store      clip-store
+                                           :sample-store    sample-store
+                                           :buffer-size     buffer-size
+                                           :composition     composition}
+        recording-thread                  (Thread. #(recording-thread-handler thread-params))
+        sample->clip-thread               (Thread. #(sample-thread-handler    thread-params))
+        clip-thread                       (Thread. #(clip-thread-handler      thread-params))
+        playback-thread                   (Thread. #(playback-thread-handler  thread-params))]
     (.start recording-thread)
     (.start sample->clip-thread)
     (.start clip-thread)
