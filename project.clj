@@ -18,7 +18,7 @@
 
   :plugins [[lein-figwheel "0.5.13"]
             [lein-cljsbuild "1.1.7" :exclusions [[org.clojure/clojure]]]
-            [cider/cider-nrepl "0.16.0-SNAPSHOT"]]
+            [cider/cider-nrepl "0.17.0-SNAPSHOT"]]
 
   :main gin.server.core/main
   :source-paths ["src/gin/server"]

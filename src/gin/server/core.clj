@@ -1,12 +1,15 @@
 (ns gin.server.core
   (:require [org.httpkit.server         :as server]
             [cheshire.core              :as json]
+            [cider.nrepl                :as cider]
             [clojure.tools.nrepl.server :as nrepl]))
 
 (defn start-nrepl-server
   []
   (let [port 7888]
-    (nrepl/start-server :port port)
+    (nrepl/start-server
+     :port port
+     :handler cider/cider-nrepl-handler)
     (println (format "Nrepl running on port %s" port))))
 
 (def msg-handler-dispatch
