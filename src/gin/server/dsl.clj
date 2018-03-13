@@ -14,7 +14,6 @@
   [samples sample-ids]
   (let [sample-ids-from-sample-maps-set (->> samples (map :id) set)]
     (every? (fn [sample-id]
-              (def sample-id sample-id)
               (not (nil? (get sample-ids-from-sample-maps-set sample-id))))
             sample-ids)))
 
